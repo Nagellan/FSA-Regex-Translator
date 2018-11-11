@@ -8,7 +8,7 @@ import java.util.*;
  */
 public class Validator {
     public Validator(Scanner in) {
-        this.result = new String[11];                       // result of validation
+        this.result = new String[6];                       // result of validation
         Arrays.fill(this.result, "");                   // setting default values to the result array
 
         HashMap fileData = formatInFile(in);
@@ -160,8 +160,9 @@ public class Validator {
             if (state1 != null)
                 state1.addTrans(transSep[1], state2);
 
-            resTrans.add(new LinkedList(Arrays.asList(state1, state2)));
+            resTrans.add(new LinkedList<>(Arrays.asList(state1, state2)));
         }
+
         if (!excessTrans.equals(""))    // E3 check
             result[3] = "E3: A transition '" + excessTrans + "' is not represented in the alphabet\n";
 
@@ -190,12 +191,14 @@ public class Validator {
 
     /**
      * This method starts the validation of FSA and returns its result.
-     * It checks the E2, E4, W1, W2, W3, completeness.
+     * It checks the E2, E4, E6.
      *
      * @return String with the result of validation
      */
     public String start() {
-         if (!result[5].equals(""))                           // if there's E5, just return message with only this error
+        String strResult = "";
+
+        if (!result[5].equals(""))                           // if there's E5, just return message with only this error
             return result[5];
 
         if (initState == null)                                //E4 check
@@ -203,38 +206,32 @@ public class Validator {
 
         if (!result[1].equals("") || !result[3].equals("") || !result[4].equals(""))
             result[0] = "Error:\n";                           // add Error label if needed
+        else
+            if (finStates.size() == 1 & finStates.get(0) == null)
+                return "{}";
 
-        if (result[0].equals("")) {                           // if there's no error, check Warnings and completeness
-            if (fsaIsComplete())
-                result[6] = "FSA is complete\n";              // check the completeness
-            else
-                result[6] = "FSA is incomplete\n";
+            if (fsaIsNondeterministic())                      // if there're no errors, check E6
+                result[6] = "E6: FSA is nondeterministic\n";
 
-            if (finStates.size() == 1 & finStates.get(0) == null)                             // check W1
-                result[8] = "W1: Accepting state is not defined\n";
+        LinkedList<State> undirectedStates = makeUndirected(new LinkedList<>(states));
+        LinkedList<State> reachedStates = getReachableStatesFrom(undirectedStates.get(0), new LinkedList<>());
 
-            if (initState != null) {                          // check W2
-                LinkedList<State> reachedStatesW = getReachableStatesFrom(initState, states, new LinkedList<>());
-                if (reachedStatesW.size() != states.size())
-                    result[9] = "W2: Some states are not reachable from initial state\n";
-            }
-
-            if (fsaIsNondeterministic())                      // check W3
-                result[10] = "W3: FSA is nondeterministic\n";
-
-            if (!result[8].equals("") || !result[9].equals("") || !result[10].equals(""))
-                result[7] = "Warning:\n";                     // add Warning label if needed
-        }
-
-        LinkedList<State> undirectedStates = makeUndirected((LinkedList<State>) states.clone());
-        LinkedList<State> reachedStates = getReachableStatesFrom(states.get(0), undirectedStates, new LinkedList<>());
         if (reachedStates.size() != states.size()) {
             result[2] = "E2: Some states are disjoint\n";     // check E2
             result[0] = "Error:\n";
             result = Arrays.copyOfRange(result, 0, 4);
         }
 
-        return arrayToStr(result);
+        strResult = arrayToStr(result);
+
+        if (strResult.equals(""))
+            return buildRegex();
+        else
+            return strResult;
+    }
+
+    private String buildRegex() {
+        return "";
     }
 
     /**
@@ -244,32 +241,15 @@ public class Validator {
      * @return concatenation of all strings consisting in 'result' array
      */
     private String arrayToStr(String[] result) {
-        String res = "";
+        StringBuilder res = new StringBuilder();
 
         for (String str : result)
-            res += str;
+            res.append(str);
 
-        return res.substring(0, res.length() - 1);  // return the string without last line break
-    }
-
-    /**
-     * This method checks FSA on completeness.
-     *
-     * @return boolean expression answering the given in method's name question
-     */
-    private boolean fsaIsComplete() {
-        for (State state : states) {
-            LinkedList<String> localAlpha = new LinkedList<>();
-
-            for (Pair<String, State> trans : state.getTrans())
-                if (!localAlpha.contains(trans.getKey()))
-                    localAlpha.add(trans.getKey());
-
-            if (localAlpha.size() != alpha.size())
-                return false;
-        }
-
-        return true;
+        if (res.length() == 0)
+            return "";
+        else
+            return res.substring(0, res.length() - 1);  // return the string without last line break
     }
 
     /**
@@ -299,11 +279,11 @@ public class Validator {
      * @param result - LinkedList of all reached states
      * @return - result (see above)
      */
-    private LinkedList<State> getReachableStatesFrom(State state, LinkedList<State> states, LinkedList<State> result) {
+    private LinkedList<State> getReachableStatesFrom(State state, LinkedList<State> result) {
         result.add(state);
         for (Pair<String, State> trans : state.getTrans())
             if (!result.contains(trans.getValue()))
-                result = getReachableStatesFrom(trans.getValue(), states, result);
+                result = getReachableStatesFrom(trans.getValue(), result);
         return result;
     }
 
