@@ -286,9 +286,9 @@ public class Validator {
         LinkedList<String> localTrans = new LinkedList<>();
 
         for (Transition trn : trans) {
-            if (localTrans.contains(trn.getLetter() + ">" + trn.getTarget().getName()))
+            if (localTrans.contains(trn.getLetter() + ">" + trn.getSource().getName()))
                 return true;
-            localTrans.add(trn.getLetter() + ">" + trn.getTarget().getName());
+            localTrans.add(trn.getLetter() + ">" + trn.getSource().getName());
         }
 
         return false;
