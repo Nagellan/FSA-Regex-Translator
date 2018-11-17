@@ -196,7 +196,7 @@ public class Validator {
      * @return String with the result of validation
      */
     public String start() {
-        String strResult = "";
+        String strResult;
 
         if (!result[5].equals(""))                           // if there's E5, just return message with only this error
             return result[5];
@@ -206,14 +206,15 @@ public class Validator {
 
         if (!result[1].equals("") || !result[3].equals("") || !result[4].equals(""))
             result[0] = "Error:\n";                           // add Error label if needed
-        else
+        else {
             if (finStates.size() == 1 & finStates.get(0) == null)
                 return "{}";
 
             if (fsaIsNondeterministic())                      // if there're no errors, check E6
                 result[6] = "E6: FSA is nondeterministic\n";
+        }
 
-        LinkedList<State> undirectedStates = makeUndirected(new LinkedList<>(states));
+        LinkedList<State> undirectedStates = makeUndirected(deepClone(states));
         LinkedList<State> reachedStates = getReachableStatesFrom(undirectedStates.get(0), new LinkedList<>());
 
         if (reachedStates.size() != states.size()) {
@@ -224,14 +225,24 @@ public class Validator {
 
         strResult = arrayToStr(result);
 
-        if (strResult.equals(""))
-            return buildRegex();
-        else
-            return strResult;
+        return strResult;
     }
 
-    private String buildRegex() {
-        return "";
+    private LinkedList<State> deepClone(LinkedList<State> states) {
+        LinkedList<State> newStates = new LinkedList<>();
+
+        for (State state : states) {
+            newStates.add(new State(state.getName()));
+        }
+
+        for (int i = 0; i < states.size(); i++) {
+            for (Pair<String, State> trans : states.get(i).getTrans()) {
+                State state = findByName(trans.getValue().getName(), newStates);
+                newStates.get(i).addTrans(trans.getKey(), state);
+            }
+        }
+
+        return newStates;
     }
 
     /**
