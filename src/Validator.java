@@ -283,12 +283,12 @@ public class Validator {
      * @return boolean expression answering the given in method's name question
      */
     private boolean fsaIsNondeterministic() {
-        LinkedList<Transition> localTrans = new LinkedList<>();
+        LinkedList<String> localTrans = new LinkedList<>();
 
         for (Transition trn : trans) {
-            if (localTrans.contains(trn))
+            if (localTrans.contains(trn.getLetter() + ">" + trn.getTarget().getName()))
                 return true;
-            localTrans.add(trn);
+            localTrans.add(trn.getLetter() + ">" + trn.getTarget().getName());
         }
 
         return false;
