@@ -1,2 +1,1 @@
-Error:
-E3: A transition 'turn_0on' is not represented in the alphabet
+((a|eps)(a|eps)*(b)|(b))(({})(a|eps)*(b)|(a|b|eps))*(({})(a|eps)*(b)|(a|b|eps))|((a|eps)(a|eps)*(b)|(b))

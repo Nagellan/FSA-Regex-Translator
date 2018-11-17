@@ -1,12 +1,13 @@
-import javafx.util.Pair;
 import java.util.LinkedList;
 
 /**
  * This class represents a state in FSA.
- * Each state has a set of transitions represented as pairs of letter and state connected by it with the original one.
+ * Each state has name and LinkedList of transitions that are adjacent to it.
+ *
+ * @author Irek Nazmiev <i.nazmiev@innopolis.ru> B17-05, Innopolis University
  */
 public class State {
-    public State(String name) {
+    State(String name) {
         this.name = name;
         this.trans = new LinkedList<>();
     }
@@ -36,7 +37,7 @@ public class State {
     /**
      * This is a getter for 'trans' list.
      *
-     * @return
+     * @return LinkedList of Transitions
      */
     public LinkedList<Transition> getTrans() {
         return trans;

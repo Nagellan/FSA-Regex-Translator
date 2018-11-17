@@ -16,7 +16,11 @@ public class Main {
 
         Validator fsaValid = new Validator(in, out);
         fsaValid.start();
-//        fsaValid.buildRegex();
+
+        RegexBuilder regexBuilder = new RegexBuilder(fsaValid.getStates(), fsaValid.getInitState(), fsaValid.getFinStates());
+        String regex = regexBuilder.build();
+
+        out.print(regex);
 
         in.close();
         out.close();

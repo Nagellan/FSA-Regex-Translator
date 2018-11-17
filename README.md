@@ -35,7 +35,7 @@ Given an FSA M = (Q, A, δ, q<sub>0</sub>, F), with Q = {q<sub>0</sub>, . . . , 
 * each set R<sub>ij</sub><sup>k</sup> is represented by a regular expression
 * the algorithm computes them step by step for k = −1, 0, ... , n
 * since there is no state numbered higher than n, the regular expression R<sub>0j</sub><sup>n</sup> represents the set of all strings that take M from its start state q<sub>0</sub> to q<sub>j</sub>
-  * If F = {q<sub>1</sub>, ... , q<sub>f</sub> } is the set of accept states, the regular expression R<sub>01</sub><sup>n</sup> \| ... \| R<sub>0f</sub><sup>n</sup> represents the language accepted by M
+  * If F = {q<sub>1</sub>, ... , q<sub>f</sub>} is the set of accept states, the regular expression R<sub>01</sub><sup>n</sup>\| ... \|R<sub>0f</sub><sup>n</sup> represents the language accepted by M
  
 The initial regular expression, for k = -1, are computed as:
 * R<sub>ij</sub><sup>-1</sup> = a<sub>1</sub> \| ... \| a<sub>m</sub> if i ≠ j, where δ(q<sub>i</sub>, a<sub>1</sub>) = ... = δ(q<sub>i</sub>, a<sub>m</sub>) = q<sub>j</sub>
@@ -59,7 +59,7 @@ The Kleene’s Algorithm should be used as presented above, but with following m
 | alpha={turn_on,turn_off}            |
 | init.st={off}                       |
 | fin.st={}                           |
-| trans={off>turn_on>off,turn_off>on} |
+| trans={off>turn_on>off,on>turn_off>on} |
 
 | `result.txt`                 |
 | ---------------------------- |

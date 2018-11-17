@@ -2,12 +2,12 @@ import java.io.PrintWriter;
 import java.util.*;
 
 /**
- * This class represents an FSA. It checks the FSA and returns an error if exists.
+ * This class represents an FSA Validator which checks the FSA and returns an error if exists.
  *
  * @author Irek Nazmiev <i.nazmiev@innopolis.ru> B17-05, Innopolis University
  */
 public class Validator {
-    public Validator(Scanner in, PrintWriter out) {
+    Validator(Scanner in, PrintWriter out) {
         this.out = out;
 
         HashMap<String, Object> fileData = formatInFile(in);
@@ -20,11 +20,11 @@ public class Validator {
     }
 
     private PrintWriter out;
-    private LinkedList<State> states;               // set of states of FSA
-    private LinkedList<String> alpha;               // alphabet of FST
-    private State initState;                        // initial state of FST
-    private LinkedList<State> finStates;            // final states of FST
-    private LinkedList<Transition> trans;           // transitions of FST
+    private LinkedList<State> states;               // states of FSA
+    private LinkedList<String> alpha;               // alphabet of FSA
+    private State initState;                        // initial state of FSA
+    private LinkedList<State> finStates;            // final states of FSA
+    private LinkedList<Transition> trans;           // transitions of FSA
 
     /**
      * This method prints error message to the output file and immediately terminates the program.
@@ -292,5 +292,32 @@ public class Validator {
         }
 
         return false;
+    }
+
+    /**
+     * Getter for FSA's states.
+     *
+     * @return LinkedList of States
+     */
+    public LinkedList<State> getStates() {
+        return states;
+    }
+
+    /**
+     * Getter for FSA's states.
+     *
+     * @return LinkedList of States
+     */
+    public State getInitState() {
+        return initState;
+    }
+
+    /**
+     * Getter for FSA's states.
+     *
+     * @return LinkedList of States
+     */
+    public LinkedList<State> getFinStates() {
+        return finStates;
     }
 }
