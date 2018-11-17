@@ -1,1 +1,2 @@
-{}
+Error:
+E3: A transition 'turn_0on' is not represented in the alphabet

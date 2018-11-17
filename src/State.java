@@ -11,8 +11,8 @@ public class State {
         this.trans = new LinkedList<>();
     }
 
-    private String name;                                // name of a state
-    private LinkedList<Pair<String, State>> trans;      // transitions of state
+    private String name;                       // name of a state
+    private LinkedList<Transition> trans;      // transitions of state
 
     /**
      * This is a getter method for 'name' variable.
@@ -30,7 +30,7 @@ public class State {
      * @param state - state which is connected to the current state by the given transition
      */
     public void addTrans(String letter, State state) {
-        trans.add(new Pair<>(letter, state));
+        trans.add(new Transition(letter, state));
     }
 
     /**
@@ -38,7 +38,7 @@ public class State {
      *
      * @return
      */
-    public LinkedList<Pair<String, State>> getTrans() {
+    public LinkedList<Transition> getTrans() {
         return trans;
     }
 }

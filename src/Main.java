@@ -14,9 +14,9 @@ public class Main {
         Scanner in = new Scanner(new File("fsa.txt"));
         PrintWriter out = new PrintWriter("result.txt");
 
-        Validator fsaValid = new Validator(in);
-        String result = fsaValid.start();
-        out.print(result);
+        Validator fsaValid = new Validator(in, out);
+        fsaValid.start();
+//        fsaValid.buildRegex();
 
         in.close();
         out.close();

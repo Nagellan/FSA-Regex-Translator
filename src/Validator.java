@@ -1,4 +1,4 @@
-import javafx.util.Pair;
+import java.io.PrintWriter;
 import java.util.*;
 
 /**
@@ -7,57 +7,65 @@ import java.util.*;
  * @author Irek Nazmiev <i.nazmiev@innopolis.ru> B17-05, Innopolis University
  */
 public class Validator {
-    public Validator(Scanner in) {
-        this.result = new String[6];                       // result of validation
-        Arrays.fill(this.result, "");                   // setting default values to the result array
+    public Validator(Scanner in, PrintWriter out) {
+        this.out = out;
 
-        HashMap fileData = formatInFile(in);
+        HashMap<String, Object> fileData = formatInFile(in);
 
         this.states = (LinkedList<State>) fileData.get("states");
         this.alpha = (LinkedList<String>) fileData.get("alpha");
         this.initState = (State) fileData.get("initState");
         this.finStates = (LinkedList<State>) fileData.get("finState");
-        this.trans = (LinkedList<LinkedList<State>>) fileData.get("trans");
+        this.trans = (LinkedList<Transition>) fileData.get("trans");
     }
 
+    private PrintWriter out;
     private LinkedList<State> states;               // set of states of FSA
     private LinkedList<String> alpha;               // alphabet of FST
     private State initState;                        // initial state of FST
     private LinkedList<State> finStates;            // final states of FST
-    private LinkedList<LinkedList<State>> trans;    // transitions of FST
-    private String[] result;                        // result of validation
+    private LinkedList<Transition> trans;           // transitions of FST
 
     /**
-     * This method formats the input file data into the convenient format of Linked Lists and necessary objects.
-     * In addition, it also checks on an Error 5.
+     * This method prints error message to the output file and immediately terminates the program.
+     *
+     * @param error - error message
+     */
+    private void reportError(String error) {
+        out.print(error);
+        out.close();
+        System.exit(0);
+    }
+
+    /**
+     * This method formats the input file data into the convenient format.
+     * In addition, it also checks an Error 5.
      *
      * @param in - input file with data to format
      * @return HashMap with formatted data
      */
-    private HashMap formatInFile(Scanner in) {
-        HashMap fileData = new HashMap();
+    private HashMap<String, Object> formatInFile(Scanner in) {
+        HashMap<String, Object> fileData = new HashMap<>();
 
-        String statesStr = in.next();           // read lines from the input file
-        String alphaStr = in.next();
-        String initStateStr = in.next();
-        String finStateStr = in.next();
-        String transStr = in.next();
+        String statesStr = in.nextLine();               // read lines from the input file
+        String alphaStr = in.nextLine();
+        String initStateStr = in.nextLine();
+        String finStateStr = in.nextLine();
+        String transStr = in.nextLine();
 
-        if (fileIsMalformed(statesStr, alphaStr, initStateStr, finStateStr, transStr)) {
-            result[5] = "E5: Input file is malformed";      // E5 check and force function's break
-            return fileData;
-        }
+        if (fileIsMalformed(statesStr, alphaStr, initStateStr, finStateStr, transStr))      // E5 check
+            reportError("Error:\nE5: Input file is malformed");
 
-        LinkedList<State> states = formatStates(statesStr);     // reformat lines
+        LinkedList<State> states = formatStates(statesStr);                                 // reformat lines
         LinkedList<String> alpha = formatAlpha(alphaStr);
-        String initStateName = initStateStr.substring(9, initStateStr.length() - 1);
-        LinkedList<State> finStateName = formatFinStates(finStateStr, states);
-        LinkedList<LinkedList<State>> trans = formatTrans(transStr, states, alpha);
+        State initState = formatInitState(initStateStr, states);
+        LinkedList<State> finStates = formatFinStates(finStateStr, states);
+        LinkedList<Transition> trans = formatTrans(transStr, states, alpha);
 
         fileData.put("states", states);
         fileData.put("alpha", alpha);
-        fileData.put("initState", findByName(initStateName, states));
-        fileData.put("finState", finStateName);
+        fileData.put("initState", initState);
+        fileData.put("finState", finStates);
         fileData.put("trans", trans);
 
         return fileData;
@@ -66,12 +74,12 @@ public class Validator {
     /**
      * This method checks whether input file is malformed or not.
      *
-     * @param statesStr - 1st line of in file
-     * @param alphaStr - 2nd line of in file
-     * @param initStateStr - 3rd line of in file
-     * @param finStateStr - 4th line of in file
-     * @param transStr - 5th line of on file
-     * @return boolean expression answering the given in method's name question
+     * @param statesStr - 1st line of input file
+     * @param alphaStr - 2nd line of input file
+     * @param initStateStr - 3rd line of input file
+     * @param finStateStr - 4th line of input file
+     * @param transStr - 5th line of input file
+     * @return boolean expression answering the question
      */
     private boolean fileIsMalformed(String statesStr, String alphaStr,
                                     String initStateStr, String finStateStr, String transStr) {
@@ -101,10 +109,10 @@ public class Validator {
 
     /**
      * This method casts the given string with alphabet's description (2nd line of input file) to a convenient format -
-     * linked list of letters (words).
+     * linked list of Strings.
      *
      * @param alphaStr - 2nd line of input file with alphabet's description
-     * @return LinkedList of Strings (words, letters)
+     * @return LinkedList of Strings
      */
     private LinkedList<String> formatAlpha(String alphaStr) {
         LinkedList<String> resAlpha = new LinkedList<>();
@@ -116,170 +124,141 @@ public class Validator {
     }
 
     /**
+     * This method casts the given string with initial state's description (3rd line of input file) to a convenient format -
+     * linked list of initial States.
+     *
+     * @param initStateStr - 3rd line of input file with initial state's description
+     * @param states - LinkedList of FSA's States
+     * @return initial State
+     */
+    private State formatInitState(String initStateStr, LinkedList<State> states) {
+        String initStateName = initStateStr.substring(9, initStateStr.length() - 1);
+
+        return findByName(initStateName, states);
+    }
+
+    /**
      * This method casts the given string with final states' description (4th line of input file) to a convenient format -
      * linked list of final States.
      *
      * @param finStateStr - 4th line of input file with final states' description
-     * @param states - linked list of states
-     * @return Linked List of final states
+     * @param states - LinkedList of FSA's States
+     * @return LinkedList of final states
      */
     private LinkedList<State> formatFinStates(String finStateStr, LinkedList<State> states) {
         LinkedList<State> resFinStates = new LinkedList<>();
         String[] finStates = finStateStr.substring(8, finStateStr.length() - 1).split(",");
 
         for (String finState : finStates)
-            resFinStates.add(findByName(finState, states));
+            if (!finState.equals(""))
+                resFinStates.add(findByName(finState, states));
 
         return resFinStates;
     }
 
     /**
-     * This method casts the given string with transition's description (5th line of input file) to a convenient format -
-     * linked list containing a list of 2 states - connected by this transition.
-     * Both these states store a transition to another states.
+     * This method casts the given string with transitions' description (5th line of input file) to a convenient format -
+     * linked list of Transitions. Moreover, it connects all FSA's states by this transitions.
+     * It also checks Error 3.
      *
      * @param transStr - 5th line of input file with transition's description
-     * @param states - linked list of states
-     * @param alpha - linked list of letters of an alphabet of FSA
+     * @param states - LinkedList of FSA's States
+     * @param alpha - LinkedList with alphabet
      * @return LinkedList of pairs: connected first and second states
      */
-    private LinkedList<LinkedList<State>> formatTrans(String transStr,
-                                                      LinkedList<State> states, LinkedList<String> alpha) {
-        LinkedList<LinkedList<State>> resTrans = new LinkedList<>();
+    private LinkedList<Transition> formatTrans(String transStr, LinkedList<State> states, LinkedList<String> alpha) {
+        LinkedList<Transition> resTrans = new LinkedList<>();
         String[] trans = transStr.substring(7, transStr.length() - 1).split(",");
-        String excessTrans = "";
 
         for (String transitionStr : trans) {
             String[] transSep = transitionStr.split(">");
             State state1 = findByName(transSep[0], states);
             State state2 = findByName(transSep[2], states);
 
-            if (!alpha.contains(transSep[1]))
-                excessTrans = transSep[1];
+            if (!alpha.contains(transSep[1]))                                                        // E3 check
+                reportError("Error:\nE3: A transition '" + transSep[1] + "' is not represented in the alphabet");
 
-            if (state1 != null)
+            if (state1 != null & state2 != null)
                 state1.addTrans(transSep[1], state2);
 
-            resTrans.add(new LinkedList<>(Arrays.asList(state1, state2)));
+            resTrans.add(new Transition(transSep[1], state1, state2));
         }
-
-        if (!excessTrans.equals(""))    // E3 check
-            result[3] = "E3: A transition '" + excessTrans + "' is not represented in the alphabet\n";
 
         return resTrans;
     }
 
     /**
-     * This method finds and returns state in State list by the name. It also checks Error 1.
+     * This method searches the state with given name in a States list and then returns it.
+     * It also checks Error 1.
      *
      * @param name - name of state to find
-     * @param states - linked list of states
+     * @param states - LinkedList of FSA's states
      * @return state with given name
      */
     private State findByName(String name, LinkedList<State> states) {
-        for (State state : states) {
+        for (State state : states)
             if (state.getName().equals(name))
                 return state;
-        }
-        if (!name.equals("")) {   // E1 check
-            result[1] = "E1: A state '" + name + "' is not in set of states\n";
-            states.add(new State(name));
-        }
+
+        reportError("Error:\nE1: A state '" + name + "' is not in set of states");     // E1 check
 
         return null;
     }
 
     /**
-     * This method starts the validation of FSA and returns its result.
+     * This method starts the validation of FSA.
      * It checks the E2, E4, E6.
-     *
-     * @return String with the result of validation
      */
-    public String start() {
-        String strResult;
-
-        if (!result[5].equals(""))                           // if there's E5, just return message with only this error
-            return result[5];
-
-        if (initState == null)                                //E4 check
-            result[4] = "E4: Initial state is not defined\n";
-
-        if (!result[1].equals("") || !result[3].equals("") || !result[4].equals(""))
-            result[0] = "Error:\n";                           // add Error label if needed
-        else {
-            if (finStates.size() == 1 & finStates.get(0) == null)
-                return "{}";
-
-            if (fsaIsNondeterministic())                      // if there're no errors, check E6
-                result[6] = "E6: FSA is nondeterministic\n";
-        }
+    public void start() {
+        if (initState == null)
+            reportError("Error:\nE4: Initial state is not defined");      //E4 check
 
         LinkedList<State> undirectedStates = makeUndirected(deepClone(states));
         LinkedList<State> reachedStates = getReachableStatesFrom(undirectedStates.get(0), new LinkedList<>());
 
-        if (reachedStates.size() != states.size()) {
-            result[2] = "E2: Some states are disjoint\n";     // check E2
-            result[0] = "Error:\n";
-            result = Arrays.copyOfRange(result, 0, 4);
-        }
+        if (reachedStates.size() != states.size())
+            reportError("Error:\nE2: Some states are disjoint");                // check E2
 
-        strResult = arrayToStr(result);
+        if (fsaIsNondeterministic())                                        // check E6
+            reportError("Error:\nE6: FSA is nondeterministic");
 
-        return strResult;
+        if (finStates.size() == 0)
+            reportError("{}");
     }
 
+    /**
+     * This method performs deep cloning of LinkedList of states.
+     *
+     * @param states - LinkedList to be cloned
+     * @return deeply cloned LinkedList
+     */
     private LinkedList<State> deepClone(LinkedList<State> states) {
         LinkedList<State> newStates = new LinkedList<>();
 
-        for (State state : states) {
+        for (State state : states)                                            // duplicate states
             newStates.add(new State(state.getName()));
-        }
 
-        for (int i = 0; i < states.size(); i++) {
-            for (Pair<String, State> trans : states.get(i).getTrans()) {
-                State state = findByName(trans.getValue().getName(), newStates);
-                newStates.get(i).addTrans(trans.getKey(), state);
+        for (int i = 0; i < states.size(); i++)                               // duplicate transitions
+            for (Transition trans : states.get(i).getTrans()) {
+                State state = findByName(trans.getTarget().getName(), newStates);
+                newStates.get(i).addTrans(trans.getLetter(), state);
             }
-        }
 
         return newStates;
     }
 
     /**
-     * This function transforms array of strings into the string
+     * This method makes the graph undirected (LinkedList of states).
      *
-     * @param result - array of strings
-     * @return concatenation of all strings consisting in 'result' array
+     * @param states - directed graph (LinkedList of states)
+     * @return undirected version of given directed graph
      */
-    private String arrayToStr(String[] result) {
-        StringBuilder res = new StringBuilder();
-
-        for (String str : result)
-            res.append(str);
-
-        if (res.length() == 0)
-            return "";
-        else
-            return res.substring(0, res.length() - 1);  // return the string without last line break
-    }
-
-    /**
-     * This method checks whether FSA is nondeterministic or not.
-     *
-     * @return boolean expression answering the given in method's name question
-     */
-    private boolean fsaIsNondeterministic() {
-        for (State state : states) {
-            LinkedList<String> localAlpha = new LinkedList<>();
-
-            for (Pair<String, State> trans : state.getTrans()) {
-                if (localAlpha.contains(trans.getKey()))
-                    return true;
-                localAlpha.add(trans.getKey());
-            }
-        }
-
-        return false;
+    private LinkedList<State> makeUndirected(LinkedList<State> states) {
+        for (State state : states)
+            for (Transition trans : state.getTrans())
+                if (state != trans.getTarget() & !trans.getTarget().getTrans().contains(new Transition(trans.getLetter(), state)))
+                    trans.getTarget().addTrans(trans.getLetter(), state);
+        return states;
     }
 
     /**
@@ -292,23 +271,26 @@ public class Validator {
      */
     private LinkedList<State> getReachableStatesFrom(State state, LinkedList<State> result) {
         result.add(state);
-        for (Pair<String, State> trans : state.getTrans())
-            if (!result.contains(trans.getValue()))
-                result = getReachableStatesFrom(trans.getValue(), result);
+        for (Transition trans : state.getTrans())
+            if (!result.contains(trans.getTarget()))
+                result = getReachableStatesFrom(trans.getTarget(), result);
         return result;
     }
 
     /**
-     * This method makes the graph undirected (LinkedList of states).
+     * This method checks whether FSA is nondeterministic or not.
      *
-     * @param states - directed graph (LinkedList of states)
-     * @return undirected version of given directed graph
+     * @return boolean expression answering the given in method's name question
      */
-    private LinkedList<State> makeUndirected(LinkedList<State> states) {
-        for (State state : states)
-            for (Pair<String, State> trans : state.getTrans())
-                if (!trans.getValue().getTrans().contains(new Pair<>(trans.getKey(), state)))
-                    trans.getValue().addTrans(trans.getKey(), state);
-        return states;
+    private boolean fsaIsNondeterministic() {
+        LinkedList<Transition> localTrans = new LinkedList<>();
+
+        for (Transition trn : trans) {
+            if (localTrans.contains(trn))
+                return true;
+            localTrans.add(trn);
+        }
+
+        return false;
     }
 }
